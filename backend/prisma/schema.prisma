@@ -1,0 +1,202 @@
+// Legal Metrology Online Verification System — Prisma schema
+// PostgreSQL datasource. Run `npx prisma migrate dev` after setting DATABASE_URL.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  ADMIN
+  LMO
+  GATC
+  BUSINESS
+}
+
+enum InstrumentStatus {
+  VALID
+  EXPIRING_SOON
+  EXPIRED
+  PENDING_VERIFICATION
+  FAILED
+}
+
+enum VerificationType {
+  INITIAL
+  RE_VERIFICATION
+  STAMPING
+}
+
+enum VerificationStatus {
+  DRAFT
+  IN_PROGRESS
+  SUBMITTED
+  COMPLETED
+  CANCELLED
+}
+
+enum VerificationResult {
+  PASS
+  FAIL
+  PENDING
+}
+
+enum ObservationStatus {
+  PASS
+  FAIL
+  PENDING
+}
+
+enum CertificateStatus {
+  VALID
+  EXPIRED
+  REVOKED
+}
+
+model User {
+  id            String   @id @default(uuid())
+  name          String
+  email         String   @unique
+  phone         String?
+  passwordHash  String
+  role          Role
+  organisation  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  verifications Verification[] @relation("OfficerVerifications")
+  auditLogs     AuditLog[]
+  notifications Notification[]
+  business      Business?       @relation("UserBusiness")
+}
+
+model Business {
+  id           String   @id @default(uuid())
+  businessName String
+  ownerName    String
+  address      String
+  phone        String
+  email        String
+  createdAt    DateTime @default(now())
+
+  userId       String?      @unique
+  user         User?        @relation("UserBusiness", fields: [userId], references: [id])
+  instruments  Instrument[]
+}
+
+model Instrument {
+  id                  String            @id @default(uuid())
+  instrumentNumber    String            @unique
+  instrumentType      String
+  manufacturer        String
+  model               String
+  serialNumber        String
+  capacity            String
+  accuracyClass       String
+  location            String
+  businessId          String
+  registrationDate    DateTime          @default(now())
+  currentStatus       InstrumentStatus  @default(PENDING_VERIFICATION)
+  nextVerificationDate DateTime?
+  createdAt           DateTime          @default(now())
+  updatedAt           DateTime          @updatedAt
+
+  business            Business          @relation(fields: [businessId], references: [id])
+  verifications       Verification[]
+  notifications       Notification[]
+
+  @@index([businessId])
+}
+
+model Verification {
+  id                  String              @id @default(uuid())
+  instrumentId        String
+  officerId           String
+  verificationNumber  String              @unique
+  applicationNumber   String
+  verificationType     VerificationType    @default(RE_VERIFICATION)
+  status              VerificationStatus  @default(IN_PROGRESS)
+  startedAt           DateTime            @default(now())
+  completedAt         DateTime?
+  result              VerificationResult  @default(PENDING)
+  remarks             String?
+  createdAt           DateTime            @default(now())
+  updatedAt           DateTime            @updatedAt
+
+  instrument          Instrument          @relation(fields: [instrumentId], references: [id])
+  officer             User                @relation("OfficerVerifications", fields: [officerId], references: [id])
+  observations        Observation[]
+  certificate          Certificate?
+
+  @@index([instrumentId])
+  @@index([officerId])
+}
+
+model Observation {
+  id               String            @id @default(uuid())
+  verificationId   String
+  parameter        String
+  observationValue String?
+  unit             String?
+  expectedValue    String?
+  minValue         Float?
+  maxValue         Float?
+  status           ObservationStatus @default(PENDING)
+  remarks          String?
+  enteredAt        DateTime?
+  sortOrder        Int               @default(0)
+  createdAt        DateTime          @default(now())
+  updatedAt        DateTime          @updatedAt
+
+  verification     Verification      @relation(fields: [verificationId], references: [id], onDelete: Cascade)
+
+  @@index([verificationId])
+}
+
+model Certificate {
+  id                String            @id @default(uuid())
+  certificateNumber String            @unique
+  verificationId    String            @unique
+  issueDate         DateTime          @default(now())
+  validUntil        DateTime
+  status            CertificateStatus @default(VALID)
+  qrToken           String            @unique
+  pdfPath           String?
+  createdAt         DateTime          @default(now())
+
+  verification      Verification      @relation(fields: [verificationId], references: [id])
+}
+
+model AuditLog {
+  id         String   @id @default(uuid())
+  userId     String?
+  action     String
+  entityType String
+  entityId   String?
+  timestamp  DateTime @default(now())
+  metadata   Json?
+
+  user       User?    @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([timestamp])
+}
+
+model Notification {
+  id           String   @id @default(uuid())
+  userId       String
+  instrumentId String?
+  type         String
+  message      String
+  read         Boolean  @default(false)
+  createdAt    DateTime @default(now())
+
+  user         User        @relation(fields: [userId], references: [id])
+  instrument   Instrument? @relation(fields: [instrumentId], references: [id])
+
+  @@index([userId])
+}
