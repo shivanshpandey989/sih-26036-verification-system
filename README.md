@@ -77,6 +77,19 @@ Examples include:
 - Verification history
 
 ---
+## Tech stack
+
+| Layer     | Technology |
+|-----------|------------|
+| Frontend  | React 18 + TypeScript + Tailwind CSS + Vite + Recharts |
+| Backend   | Node.js + Express.js (REST API) |
+| Database  | PostgreSQL |
+| ORM       | Prisma |
+| Auth      | JWT + role-based access control |
+| QR codes  | `qrcode` npm package |
+| PDF       | `pdfkit` |
+| Scheduling| `node-cron` (expiry checks) |
+
 
 ### Workflow
 
