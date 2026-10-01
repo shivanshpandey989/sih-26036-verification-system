@@ -1,29 +1,109 @@
-# Online Verification System for Weighing and Measuring Instruments
+# Online Verification System for Weighing & Measuring Instruments
 
-SIH 2026 Problem Statement: 26036
+### Smart India Hackathon 2026 — Problem Statement 26036
 
-A web-based platform for digitizing the verification and certification workflow of weighing and measuring instruments.
+An online system for digitizing the verification and certification process of weighing and measuring instruments under Legal Metrology.
 
-## Features
-- Role-based login (Admin, LMO/GATC, Business)
-- Instrument registration
-- Digital verification certificates
-- QR-based certificate authentication
-- Verification workflow tracking
+The system is designed to reduce manual paperwork, improve transparency, simplify certificate management, and provide a way to verify certificates online using QR codes.
 
-## Tech Stack
-Frontend: React.js
-Backend: Node.js + Express.js
-Database: PostgreSQL + Prisma
+---
 
-## Run Locally
+## Project Status
 
-Backend:
-cd backend
-npm install
-npm start
+### Current Status: Core System Completed | Tracking & Monitoring in Progress
 
-Frontend:
-cd frontend
-npm install
-npm run dev
+The main verification and certification workflow has been implemented.
+
+The remaining development is mainly focused on building a more complete tracking, monitoring, notification, and analytics layer around the verification process.
+
+---
+
+# What Has Been Implemented
+
+## 1. Authentication & Role-Based Access
+
+The system supports different user roles:
+
+- Admin
+- Legal Metrology Officer (LMO)
+- Government Approved Test Centre (GATC)
+- Business/User
+
+Each role has different permissions and access to different parts of the system.
+
+### Implemented
+
+- Login system
+- JWT-based authentication
+- Role-based access control
+- Protected API routes
+- Role-specific dashboards
+- Business ownership protection
+- Officer ownership protection
+
+---
+
+## 2. Business/User Management
+
+LMO and GATC users can onboard business users into the system.
+
+### Implemented
+
+- Add Business User
+- Business registration
+- Business information management
+- Role restrictions
+- Business-specific access control
+- Prevention of unauthorized access to another business's records
+
+---
+
+## 3. Instrument Management
+
+Businesses can maintain their weighing and measuring instruments in the system.
+
+### Instrument Information
+
+Examples include:
+
+- Instrument ID
+- Instrument type
+- Manufacturer
+- Model
+- Serial number
+- Capacity
+- Location
+- Status
+- Verification history
+
+---
+
+### Workflow
+
+```text
+Business
+   |
+   v
+LMO / GATC
+   |
+   v
+Select Instrument
+   |
+   v
+Verification
+   |
+   v
+Observations
+   |
+   v
+PASS / FAIL
+   |
+   +----------------+
+   |                |
+  PASS              FAIL
+   |                |
+   v                v
+Certificate       Re-verification
+   |
+   v
+QR Verification
